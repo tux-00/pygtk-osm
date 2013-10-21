@@ -8,6 +8,7 @@
     <property name="window_position">center-always</property>
     <property name="default_width">600</property>
     <property name="default_height">600</property>
+    <signal name="destroy" handler="destroy"/>
     <child>
       <object class="GtkVBox" id="box">
         <property name="visible">True</property>

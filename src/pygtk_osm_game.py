@@ -136,7 +136,7 @@ class GUI:
 		return layer
 
 
-	def destroy(window, self):
+	def destroy(self, window):
 		Gtk.main_quit()
 
 def main():
