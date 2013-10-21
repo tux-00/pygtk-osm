@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#
 # -*- Mode: Python; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-
 #
 # pygtk_osm_game.py
@@ -25,6 +26,7 @@ import os, sys, urllib.request, json, ast
 
 
 UI_FILE = "./pygtk_osm_game.ui"
+MARKER_IMG_PATH = "../icons/marker.png"
 
 
 class GUI:
@@ -38,6 +40,7 @@ class GUI:
 		self.builder.connect_signals(self)
 
 		# Get objects from the builder
+		# TODO: Remove the entry_search focus when app start
 		window = self.builder.get_object('window')
 		self.entry_search = self.builder.get_object('entry_search')
 
@@ -62,22 +65,22 @@ class GUI:
 
 		
 	def on_button_search_clicked(self, widget):
-		# TODO: Search with accents
-		# TODO: Change the limit param ?
+		# FIXME: Search with accents
+		# TODO: Polygons trace
 		
-		# Get search request from entry_search and send to nominamtim
+        # Get search request from entry_search and send to nominamtim
 		to_search = self.entry_search.get_text()
 		to_search = to_search.replace(' ', '+')
 		ret = urllib.request.urlopen(
 			'http://nominatim.openstreetmap.org/search?format=json&q='
-			+to_search
-			+'&addressdetails=1&limit=1')
+			+ to_search
+			+ '&addressdetails=1&limit=1&polygon=1')
 		self.data = json.loads(ret.read().decode('utf-8'))
 		
 		# Make dictionary
 		self.data = str(self.data)
-		self.data = self.data.replace('[','',1)
-		self.data = self.data[::-1].replace(']','',1)[::-1]
+		self.data = self.data.replace('[', '', 1)
+		self.data = self.data[::-1].replace(']', '', 1)[::-1]
 		self.data = ast.literal_eval(self.data)
 
 		# DEBUG
@@ -85,45 +88,49 @@ class GUI:
 
 		# Center the result and zoom it
 		self.map_view.center_on(float(self.data['lat']), float(self.data['lon']))
-		# TODO: Change zoom level by type (country, city...)
-		self.map_view.set_property('zoom-level', 6)
 
 		# Create a marker
-		self.layer = self.create_marker_layer(self.map_view)
+		if (self.data['type'] == "city"):
+			self.layer = self.create_marker_layer(self.map_view,
+												float(self.data['lat']),
+												float(self.data['lon']))
+			self.map_view.set_property('zoom-level', 10)
+			
+		elif self.data['type'] == "country" or self.data['type'] == "administrative":
+			self.layer = self.create_marker_layer(self.map_view,
+												float(self.data['lat']),
+												float(self.data['lon']))
+			self.map_view.set_property('zoom-level', 4)
+		
+		else: return False;
+		
 		self.map_view.add_layer(self.layer)
-
 		self.layer.animate_in_all_markers()
-		
-		# TODO: Reset the entry_search
 
 		
-	def create_marker_layer(self, map_view):
+	def create_marker_layer(self, map_view, lat, lon):
 		# TODO: One marker at a time (layer.hide_all_markers() ?)
+		# TODO: Get icons on JSON data ?
 		
 		# Marker RGB color
 		color = Clutter.Color.new(47, 36, 47, 255)
 		layer = Champlain.MarkerLayer()
-
-		# TODO: Adapt with type (country, city...)
-		# TODO: Make exception
-		marker = Champlain.Label.new_with_text(
-			self.data['address']['city'], "Serif 14", None,
-			color)
-		#marker.set_use_markup(True) ?
-		#marker.set_clip_to_allocation(0) ?
-		marker.set_color(color)
-		marker.set_location(float(self.data['lat']), float(self.data['lon']))
 		
-		layer.add_marker(marker)
+		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
+		# marker.set_text("text")
+		marker.set_draw_background(False)
+		marker.set_color(color)
+		marker.set_location(lat, lon)
 		
 		# Can be clicked
 		marker.set_reactive(True)
 		
 		# Connect marker click signal
-		#marker.connect("button-release-event", action, map_view)
+		# marker.connect("button-release-event", action, map_view)
 		
 		# Can't move marker
 		layer.set_all_markers_undraggable()
+		layer.add_marker(marker)
 		layer.show()
 		
 		return layer
