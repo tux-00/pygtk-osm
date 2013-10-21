@@ -40,7 +40,6 @@ class GUI:
 		self.builder.connect_signals(self)
 
 		# Get objects from the builder
-		# TODO: Remove the entry_search focus when app start
 		window = self.builder.get_object('window')
 		self.entry_search = self.builder.get_object('entry_search')
 
@@ -69,6 +68,7 @@ class GUI:
 		# TODO: Polygons trace
 		
         # Get search request from entry_search and send to nominamtim
+        # TODO: Verifications on entry_search text
 		to_search = self.entry_search.get_text()
 		to_search = to_search.replace(' ', '+')
 		ret = urllib.request.urlopen(
