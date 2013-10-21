@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="2.24"/>
+  <!-- interface-naming-policy project-wide -->
   <object class="GtkWindow" id="window">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">OSM Game</property>
+    <property name="title">OSM Game</property>
     <property name="window_position">center-always</property>
     <property name="default_width">600</property>
     <property name="default_height">600</property>
-    <signal name="destroy" handler="destroy" swapped="no"/>
     <child>
-      <object class="GtkBox" id="box">
+      <object class="GtkVBox" id="box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkMenuBar" id="menubar">
+          <object class="GtkMenuBar" id="menubar1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkMenuItem" id="file">
+              <object class="GtkMenuItem" id="menuitem1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_File</property>
+                <property name="label" translatable="yes">_Fichier</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menu1">
@@ -77,7 +75,6 @@
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="destroy" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -85,10 +82,10 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="edit">
+              <object class="GtkMenuItem" id="menuitem2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_Edit</property>
+                <property name="label" translatable="yes">É_dition</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menu2">
@@ -135,25 +132,25 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="view">
+              <object class="GtkMenuItem" id="menuitem3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_View</property>
+                <property name="label" translatable="yes">_Affichage</property>
                 <property name="use_underline">True</property>
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="help">
+              <object class="GtkMenuItem" id="menuitem4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_Help</property>
+                <property name="label" translatable="yes">Aid_e</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menu3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="about">
+                      <object class="GtkImageMenuItem" id="imagemenuitem10">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -173,11 +170,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkGrid" id="grid_search">
+          <object class="GtkHBox" id="hbox1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">2</property>
-            <property name="margin_right">2</property>
             <child>
               <object class="GtkEntry" id="entry_search">
                 <property name="visible">True</property>
@@ -189,10 +184,10 @@
                 <signal name="activate" handler="on_button_search_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="padding">1</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -201,17 +196,13 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="margin_left">2</property>
-                <property name="margin_bottom">1</property>
                 <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
-                <signal name="clicked" handler="on_button_search_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">1</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
