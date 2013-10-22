@@ -41,30 +41,37 @@ class GUI:
 
 		# Get objects from the builder
 		window = self.builder.get_object('window')
+		box = self.builder.get_object('box')
 		self.entry_search = self.builder.get_object('entry_search')
+		self.button_search = self.builder.get_object('button_search')
 
 		map_widget = GtkChamplain.Embed()
-		self.map_view = map_widget.get_view()
+		map_view = map_widget.get_view()
 		
 		# Smooth mode
-		self.map_view.set_property('kinetic-mode', True)
+		map_view.set_property('kinetic-mode', True)
 		
 		# Zoom start
-		self.map_view.set_property('zoom-level', 3)
+		map_view.set_property('zoom-level', 3)
 		
 		# Zoom on double click
-		self.map_view.set_property('zoom-on-double-click', True)
+		map_view.set_property('zoom-on-double-click', True)
 
 
 		# Add map_widget to the GtkBox
-		box = self.builder.get_object('box')
 		box.add(map_widget)
 		
 		window.show_all()
 
+
+	def on_entry_search_icon_press(self, *args):
+		self.entry_search.set_text('')
+		self.button_search.grab_focus()
+		
 		
 	def on_button_search_clicked(self, widget):
 		# TODO: Polygons trace
+		# TODO: Segment code
 		
         # Get search request from entry_search
 		to_search = self.entry_search.get_text()

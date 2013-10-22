@@ -179,11 +179,16 @@
               <object class="GtkEntry" id="entry_search">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hexpand">True</property>
                 <property name="invisible_char">●</property>
+                <property name="secondary_icon_stock">gtk-clear</property>
+                <property name="primary_icon_activatable">False</property>
+                <property name="secondary_icon_activatable">True</property>
+                <property name="primary_icon_sensitive">True</property>
+                <property name="secondary_icon_sensitive">True</property>
                 <property name="placeholder_text">Exemple: Paris, 75000</property>
                 <accelerator key="Return" signal="activate"/>
                 <signal name="activate" handler="on_button_search_clicked" swapped="no"/>
+                <signal name="icon-press" handler="on_entry_search_icon_press" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
