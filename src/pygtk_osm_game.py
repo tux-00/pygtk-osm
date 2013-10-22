@@ -127,7 +127,7 @@ class GUI:
 		self.layer.animate_in_all_markers()
 
 		
-	def create_marker_layer(self, map_view, lat, lon):
+	def create_marker_layer(self, map_view, lat, lon, label = None):
 		# TODO: One marker at a time (layer.hide_all_markers() ?)
 		# TODO: Get icons on JSON data ?
 		
@@ -136,7 +136,8 @@ class GUI:
 		layer = Champlain.MarkerLayer()
 		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
-		# marker.set_text("text")
+		if(label != None):
+			marker.set_text(label)
 		marker.set_draw_background(False)
 		marker.set_color(color)
 		marker.set_location(lat, lon)
