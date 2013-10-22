@@ -67,10 +67,12 @@ class GUI:
 		# TODO: Polygons trace
 		
         # Get search request from entry_search
-        # TODO: Verifications on entry_search text
 		to_search = self.entry_search.get_text()
-		to_search = to_search.replace(' ', '+')
-		to_search = to_search.replace('\'', ' ')
+		
+		if(to_search != ''):
+			to_search = to_search.replace(' ', '+')
+			to_search = to_search.replace('\'', ' ')
+		else: return 0
 		
 		# Replace accents char
 		to_search = ''.join((c for c in unicodedata.normalize('NFD', to_search)\
