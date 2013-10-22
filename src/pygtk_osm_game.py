@@ -22,7 +22,7 @@
 from gi.repository import Gtk, GdkPixbuf, Gdk, GObject, GtkChamplain, GtkClutter
 from gi.repository import Champlain, Clutter
 
-import os, sys, urllib.request, json, ast
+import os, sys, urllib.request, json, ast, unicodedata
 
 
 UI_FILE = "./pygtk_osm_game.ui"
@@ -64,17 +64,36 @@ class GUI:
 
 		
 	def on_button_search_clicked(self, widget):
-		# FIXME: Search with accents
 		# TODO: Polygons trace
 		
-        # Get search request from entry_search and send to nominamtim
+        # Get search request from entry_search
         # TODO: Verifications on entry_search text
 		to_search = self.entry_search.get_text()
 		to_search = to_search.replace(' ', '+')
-		ret = urllib.request.urlopen(
-			'http://nominatim.openstreetmap.org/search?format=json&q='
-			+ to_search
-			+ '&addressdetails=1&limit=1&polygon=1')
+		to_search = to_search.replace('\'', ' ')
+		
+		# Replace accents char
+		to_search = ''.join((c for c in unicodedata.normalize('NFD', to_search)\
+							 if unicodedata.category(c) != 'Mn'))
+		
+		# Build request
+		req = "http://nominatim.openstreetmap.org/search?format=json&q="\
+			  + to_search\
+			  + "&addressdetails=1&limit=1&polygon=1"
+		
+		try:
+			# Send request to Nominatim
+			ret = urllib.request.urlopen(req)
+		except UnicodeEncodeError:
+			# TODO: Create an error Dialog
+			print("UnicodeEncodeError: Bad character(s) in the requested search")
+			return 0
+		except:
+			# TODO: Create an error Dialog
+			print("Error")
+			return 0
+					
+		# Get returned data
 		self.data = json.loads(ret.read().decode('utf-8'))
 		
 		# Make dictionary
