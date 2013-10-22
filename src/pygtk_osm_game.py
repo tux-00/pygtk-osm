@@ -46,16 +46,16 @@ class GUI:
 		self.button_search = self.builder.get_object('button_search')
 
 		map_widget = GtkChamplain.Embed()
-		map_view = map_widget.get_view()
+		self.map_view = map_widget.get_view()
 		
 		# Smooth mode
-		map_view.set_property('kinetic-mode', True)
+		self.map_view.set_property('kinetic-mode', True)
 		
 		# Zoom start
-		map_view.set_property('zoom-level', 3)
+		self.map_view.set_property('zoom-level', 3)
 		
 		# Zoom on double click
-		map_view.set_property('zoom-on-double-click', True)
+		self.map_view.set_property('zoom-on-double-click', True)
 
 
 		# Add map_widget to the GtkBox
