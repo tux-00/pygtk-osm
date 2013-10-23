@@ -86,24 +86,25 @@ class GUI:
 							 if unicodedata.category(c) != 'Mn'))
 		
 		# Build request
-		req = "http://nominatim.openstreetmap.org/search?format=json&q="\
-			  + to_search\
-			  + "&addressdetails=1&limit=1&polygon=1"
+		# TODO: add accept-language param
+		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search\
+			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
 		
 		try:
 			# Send request to Nominatim
 			ret = urllib.request.urlopen(req)
-		except UnicodeEncodeError:
-			# TODO: Create an error Dialog
-			print("UnicodeEncodeError: Bad character(s) in the requested search")
-			return 0
 		except:
-			# TODO: Create an error Dialog
+			# TODO: Create an error Dialog with the error
 			print("Error")
 			return 0
 					
 		# Get returned data
 		self.data = json.loads(ret.read().decode('utf-8'))
+		
+		if(len(self.data) == 0):
+			# TODO: Create an error Dialog
+			print("Search", to_search ,"not found.")
+			return 0
 		
 		# Make dictionary
 		self.data = str(self.data)
