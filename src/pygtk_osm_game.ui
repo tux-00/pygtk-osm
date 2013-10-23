@@ -179,6 +179,7 @@
               <object class="GtkEntry" id="entry_search">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="max_length">80</property>
                 <property name="invisible_char">●</property>
                 <property name="secondary_icon_stock">gtk-clear</property>
                 <property name="primary_icon_activatable">False</property>
