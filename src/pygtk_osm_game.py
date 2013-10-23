@@ -66,7 +66,6 @@ class GUI:
 
 	def on_button_search_clicked(self, widget):
 		# TODO: Polygons trace
-		# TODO: Segment code
 		
 		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
