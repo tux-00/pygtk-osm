@@ -19,10 +19,9 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from gi.repository import Gtk, GdkPixbuf, Gdk, GObject, GtkChamplain, GtkClutter
-from gi.repository import Champlain, Clutter
+from gi.repository import Gtk, GtkChamplain, GtkClutter, Champlain, Clutter
 
-import os, sys, urllib.request, json, ast, unicodedata
+import sys, urllib.request, json, ast
 
 
 UI_FILE = "./pygtk_osm_game.ui"
@@ -70,7 +69,7 @@ class GUI:
 			self.error_dialog.format_secondary_text(label)
 			self.error_dialog.run()
 			self.error_dialog.hide()
-		else: return 0
+		else: return False
 
 
 	def on_entry_search_icon_press(self, *args):
@@ -82,21 +81,44 @@ class GUI:
 		# TODO: Polygons trace
 		# TODO: Segment code
 		
-        # Get search request from entry_search
+		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
+
+		data = self.request_json_data(to_search)
 		
+		if data == False: 
+			return False
+
+		# Center the result and zoom it
+		self.map_view.center_on(float(data['lat']), float(data['lon']))
+
+		# Create a marker
+		if data['type'] == "country" or data['type'] == "administrative" \
+		or data['type'] == "continent":
+			layer = self.create_marker_layer(self.map_view,
+												float(data['lat']),
+												float(data['lon']))
+			self.map_view.set_property('zoom-level', 4)
+		
+		else:
+			layer = self.create_marker_layer(self.map_view,
+												float(data['lat']),
+												float(data['lon']))
+			self.map_view.set_property('zoom-level', 10)
+		
+		self.map_view.add_layer(layer)
+		layer.animate_in_all_markers()
+
+
+	def request_json_data(self, to_search):
+		# Convert special chars
 		if(to_search != ''):
-			to_search = to_search.replace(' ', '+')
-			to_search = to_search.replace('\'', ' ')
-		else: return 0
-		
-		# Replace accents char
-		to_search = ''.join((c for c in unicodedata.normalize('NFD', to_search)\
-							 if unicodedata.category(c) != 'Mn'))
+			to_search_parsed = urllib.parse.quote(to_search)
+		else: return False
 		
 		# Build request
 		# TODO: add accept-language param
-		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search\
+		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search_parsed\
 			  + "&format=json&addressdetails=1&limit=1&polygon=1"
 		
 		try:
@@ -104,45 +126,28 @@ class GUI:
 			ret = urllib.request.urlopen(req)
 		except Exception as detail:
 			self.new_error_dialog(detail)
-			return 0
+			return False
 					
 		# Get returned data
-		self.data = json.loads(ret.read().decode('utf-8'))
+		data = json.loads(ret.read().decode('utf-8'))
 		
-		if(len(self.data) == 0):
+		# If search not found
+		if(len(data) == 0):
 			self.new_error_dialog("Search \'" + str(to_search) + "\' not found.")
-			return 0
+			return False
 		
 		# Make dictionary
-		self.data = str(self.data)
-		self.data = self.data.replace('[', '', 1)
-		self.data = self.data[::-1].replace(']', '', 1)[::-1]
-		self.data = ast.literal_eval(self.data)
+		data = str(data)
+		data = data.replace('[', '', 1)
+		data = data[::-1].replace(']', '', 1)[::-1]
+		data = ast.literal_eval(data)
 
 		# DEBUG
-		print('data =', self.data)
-
-		# Center the result and zoom it
-		self.map_view.center_on(float(self.data['lat']), float(self.data['lon']))
-
-		# Create a marker
-		if self.data['type'] == "country" or self.data['type'] == "administrative" \
-		or self.data['type'] == "continent":
-			self.layer = self.create_marker_layer(self.map_view,
-												float(self.data['lat']),
-												float(self.data['lon']))
-			self.map_view.set_property('zoom-level', 4)
+		print('data =', data)
 		
-		else:
-			self.layer = self.create_marker_layer(self.map_view,
-												float(self.data['lat']),
-												float(self.data['lon']))
-			self.map_view.set_property('zoom-level', 10)
-		
-		self.map_view.add_layer(self.layer)
-		self.layer.animate_in_all_markers()
+		return data
 
-		
+
 	def create_marker_layer(self, map_view, lat, lon, label=None):
 		# TODO: One marker at a time (layer.hide_all_markers() ?)
 		# TODO: Get icons on JSON data ?
