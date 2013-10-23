@@ -62,21 +62,8 @@ class GUI:
 		box.add(map_widget)
 		
 		window.show_all()
-		
-		
-	def new_error_dialog(self, label):
-		if(isinstance(label, str)):
-			self.error_dialog.format_secondary_text(label)
-			self.error_dialog.run()
-			self.error_dialog.hide()
-		else: return False
 
 
-	def on_entry_search_icon_press(self, *args):
-		self.entry_search.set_text('')
-		self.button_search.grab_focus()
-		
-		
 	def on_button_search_clicked(self, widget):
 		# TODO: Polygons trace
 		# TODO: Segment code
@@ -176,6 +163,19 @@ class GUI:
 		
 		return layer
 
+
+	def new_error_dialog(self, label):
+		if(isinstance(label, str)):
+			self.error_dialog.format_secondary_text(label)
+			self.error_dialog.run()
+			self.error_dialog.hide()
+		else: return False
+
+
+	def on_entry_search_icon_press(self, *args):
+		self.entry_search.set_text('')
+		self.button_search.grab_focus()
+		
 
 	def destroy(self, window):
 		Gtk.main_quit()
