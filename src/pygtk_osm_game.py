@@ -44,6 +44,7 @@ class GUI:
 		box = self.builder.get_object('box')
 		self.entry_search = self.builder.get_object('entry_search')
 		self.button_search = self.builder.get_object('button_search')
+		self.error_dialog = self.builder.get_object('error_dialog')
 
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
@@ -62,6 +63,14 @@ class GUI:
 		box.add(map_widget)
 		
 		window.show_all()
+		
+		
+	def new_error_dialog(self, label):
+		if(isinstance(label, str)):
+			self.error_dialog.format_secondary_text(label)
+			self.error_dialog.run()
+			self.error_dialog.hide()
+		else: return 0
 
 
 	def on_entry_search_icon_press(self, *args):
@@ -88,22 +97,20 @@ class GUI:
 		# Build request
 		# TODO: add accept-language param
 		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search\
-			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
+			  + "&format=json&addressdetails=1&limit=1&polygon=1"
 		
 		try:
 			# Send request to Nominatim
 			ret = urllib.request.urlopen(req)
-		except:
-			# TODO: Create an error Dialog with the error
-			print("Error")
+		except Exception as detail:
+			self.new_error_dialog(detail)
 			return 0
 					
 		# Get returned data
 		self.data = json.loads(ret.read().decode('utf-8'))
 		
 		if(len(self.data) == 0):
-			# TODO: Create an error Dialog
-			print("Search", to_search ,"not found.")
+			self.new_error_dialog("Search \'" + str(to_search) + "\' not found.")
 			return 0
 		
 		# Make dictionary
@@ -119,25 +126,24 @@ class GUI:
 		self.map_view.center_on(float(self.data['lat']), float(self.data['lon']))
 
 		# Create a marker
-		if (self.data['type'] == "city"):
-			self.layer = self.create_marker_layer(self.map_view,
-												float(self.data['lat']),
-												float(self.data['lon']))
-			self.map_view.set_property('zoom-level', 10)
-			
-		elif self.data['type'] == "country" or self.data['type'] == "administrative":
+		if self.data['type'] == "country" or self.data['type'] == "administrative" \
+		or self.data['type'] == "continent":
 			self.layer = self.create_marker_layer(self.map_view,
 												float(self.data['lat']),
 												float(self.data['lon']))
 			self.map_view.set_property('zoom-level', 4)
 		
-		else: return False;
+		else:
+			self.layer = self.create_marker_layer(self.map_view,
+												float(self.data['lat']),
+												float(self.data['lon']))
+			self.map_view.set_property('zoom-level', 10)
 		
 		self.map_view.add_layer(self.layer)
 		self.layer.animate_in_all_markers()
 
 		
-	def create_marker_layer(self, map_view, lat, lon, label = None):
+	def create_marker_layer(self, map_view, lat, lon, label=None):
 		# TODO: One marker at a time (layer.hide_all_markers() ?)
 		# TODO: Get icons on JSON data ?
 		
