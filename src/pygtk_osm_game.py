@@ -82,19 +82,11 @@ class GUI:
 		# Create a marker
 		if data['type'] == "country" or data['type'] == "administrative" \
 		or data['type'] == "continent":
-			layer = self.create_marker(self.map_view,
-							float(data['lat']),
-							float(data['lon']))
-			self.map_view.set_property('zoom-level', 4)
-		
+			self.create_marker(self.map_view, float(data['lat']), 
+							float(data['lon']), 4)
 		else:
-			layer = self.create_marker(self.map_view,
-							float(data['lat']),
-							float(data['lon']))
-			self.map_view.set_property('zoom-level', 10)
-		
-		self.map_view.add_layer(layer)
-		layer.animate_in_all_markers()
+			self.create_marker(self.map_view, float(data['lat']),
+							float(data['lon']), 10)
 
 
 	def request_json_data(self, to_search):
@@ -135,7 +127,7 @@ class GUI:
 		return data
 
 
-	def create_marker(self, map_view, lat, lon, label=None):
+	def create_marker(self, map_view, lat, lon, zoom, label=None):
 		# TODO: Get icons on JSON data ?
 		
 		# Marker RGB color
@@ -159,7 +151,11 @@ class GUI:
 		self.layer.set_all_markers_undraggable()
 		self.layer.add_marker(marker)
 		
-		return self.layer
+		# if zoom in range()
+		self.map_view.set_property('zoom-level', zoom)
+		
+		self.map_view.add_layer(self.layer)
+		self.layer.animate_in_all_markers()
 
 
 	def new_error_dialog(self, label):
