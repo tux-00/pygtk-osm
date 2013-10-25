@@ -47,6 +47,7 @@ class GUI:
 
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
+		self.layer = Champlain.MarkerLayer()
 		
 		# Smooth mode
 		self.map_view.set_property('kinetic-mode', True)
@@ -81,15 +82,15 @@ class GUI:
 		# Create a marker
 		if data['type'] == "country" or data['type'] == "administrative" \
 		or data['type'] == "continent":
-			layer = self.create_marker_layer(self.map_view,
-												float(data['lat']),
-												float(data['lon']))
+			layer = self.create_marker(self.map_view,
+							float(data['lat']),
+							float(data['lon']))
 			self.map_view.set_property('zoom-level', 4)
 		
 		else:
-			layer = self.create_marker_layer(self.map_view,
-												float(data['lat']),
-												float(data['lon']))
+			layer = self.create_marker(self.map_view,
+							float(data['lat']),
+							float(data['lon']))
 			self.map_view.set_property('zoom-level', 10)
 		
 		self.map_view.add_layer(layer)
@@ -134,13 +135,11 @@ class GUI:
 		return data
 
 
-	def create_marker_layer(self, map_view, lat, lon, label=None):
-		# TODO: One marker at a time (layer.hide_all_markers() ?)
+	def create_marker(self, map_view, lat, lon, label=None):
 		# TODO: Get icons on JSON data ?
 		
 		# Marker RGB color
 		color = Clutter.Color.new(47, 36, 47, 255)
-		layer = Champlain.MarkerLayer()
 		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
 		if(label != None):
@@ -156,11 +155,11 @@ class GUI:
 		# marker.connect("button-release-event", action, map_view)
 		
 		# Can't move marker
-		layer.set_all_markers_undraggable()
-		layer.add_marker(marker)
-		layer.show()
+		self.layer.remove_all()
+		self.layer.set_all_markers_undraggable()
+		self.layer.add_marker(marker)
 		
-		return layer
+		return self.layer
 
 
 	def new_error_dialog(self, label):
@@ -180,7 +179,7 @@ class GUI:
 		Gtk.main_quit()
 
 def main():
-	app = GUI()
+	GUI()
 	Gtk.main()
 
 
