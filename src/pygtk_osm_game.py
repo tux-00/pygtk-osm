@@ -48,6 +48,7 @@ class GUI:
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
 		self.layer = Champlain.MarkerLayer()
+		self.polygon_layer = Champlain.PathLayer()
 		
 		# Smooth mode
 		self.map_view.set_property('kinetic-mode', True)
@@ -66,7 +67,6 @@ class GUI:
 
 
 	def on_button_search_clicked(self, widget):
-		# TODO: Polygons trace
 		
 		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
@@ -82,11 +82,41 @@ class GUI:
 		# Create a marker
 		if data['type'] == "country" or data['type'] == "administrative" \
 		or data['type'] == "continent":
-			self.create_marker(self.map_view, float(data['lat']), 
+			self.trace_polygons(data['geojson']['coordinates'])
+			self.create_marker(self.map_view, float(data['lat']),
 							float(data['lon']), 4)
 		else:
+			self.trace_polygons(data['geojson']['coordinates'])
 			self.create_marker(self.map_view, float(data['lat']),
 							float(data['lon']), 10)
+
+
+	def trace_polygons(self, points):
+		# TODO: One polygon at a time
+		
+		# Marker RGB color
+		stroke_color = Clutter.Color.new(11, 191, 222, 255)
+		fill_color = Clutter.Color.new(255, 255, 255, 150)
+		
+		for i in range(0, len(points[0])):
+			coord = Champlain.Coordinate.new_full(float(points[0][i][1]), float(points[0][i][0]))
+			self.polygon_layer.add_node(coord)
+			
+		#self.polygon_layer.set_dash([6, 2])	
+		
+		self.polygon_layer.set_stroke_color(stroke_color)
+		self.polygon_layer.set_fill_color(fill_color)
+		
+		self.polygon_layer.set_closed(True)
+		self.polygon_layer.set_fill(True)
+		self.polygon_layer.set_visible(True)
+		
+		# Can be clicked
+		#self.polygon_layer.set_reactive(True)
+		# Connect marker click signal
+		# marker.connect("button-release-event", action, self.map_view)
+		
+		self.map_view.add_layer(self.polygon_layer)
 
 
 	def request_json_data(self, to_search):
@@ -98,7 +128,7 @@ class GUI:
 		# Build request
 		# TODO: add accept-language param
 		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search_parsed\
-			  + "&format=json&addressdetails=1&limit=1&polygon=1"
+			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
 		
 		try:
 			# Send request to Nominatim
@@ -122,7 +152,7 @@ class GUI:
 		data = ast.literal_eval(data)
 
 		# DEBUG
-		print('data =', data)
+		# print('data =', data)
 		
 		return data
 
@@ -130,29 +160,24 @@ class GUI:
 	def create_marker(self, map_view, lat, lon, zoom, label=None):
 		# TODO: Get icons on JSON data ?
 		
-		# Marker RGB color
-		color = Clutter.Color.new(47, 36, 47, 255)
-		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
 		if(label != None):
 			marker.set_text(label)
 		marker.set_draw_background(False)
-		marker.set_color(color)
 		marker.set_location(lat, lon)
 		
 		# Can be clicked
-		marker.set_reactive(True)
-		
+		#marker.set_reactive(True)
 		# Connect marker click signal
-		# marker.connect("button-release-event", action, map_view)
+		# marker.connect("button-release-event", action, self.map_view)
 		
 		# Can't move marker
 		self.layer.remove_all()
 		self.layer.set_all_markers_undraggable()
 		self.layer.add_marker(marker)
 		
-		# if zoom in range()
-		self.map_view.set_property('zoom-level', zoom)
+		if zoom in range(0, 18):
+			self.map_view.set_property('zoom-level', zoom)
 		
 		self.map_view.add_layer(self.layer)
 		self.layer.animate_in_all_markers()
