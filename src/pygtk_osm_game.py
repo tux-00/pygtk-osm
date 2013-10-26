@@ -176,7 +176,7 @@ class GUI:
 		self.layer.set_all_markers_undraggable()
 		self.layer.add_marker(marker)
 		
-		if zoom in range(0, 18):
+		if zoom in range(0, 19):
 			self.map_view.set_property('zoom-level', zoom)
 		
 		self.map_view.add_layer(self.layer)
