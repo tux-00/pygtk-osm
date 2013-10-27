@@ -45,9 +45,10 @@ class GUI:
 		self.button_search = self.builder.get_object('button_search')
 		self.error_dialog = self.builder.get_object('error_dialog')
 
+		# Create layers
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
-		self.layer = Champlain.MarkerLayer()
+		self.marker_layer = Champlain.MarkerLayer()
 		self.polygon_layer = Champlain.PathLayer()
 		
 		# Smooth mode
@@ -59,7 +60,10 @@ class GUI:
 		# Zoom on double click
 		self.map_view.set_property('zoom-on-double-click', True)
 
-
+		# Add layers on the map
+		self.map_view.add_layer(self.polygon_layer)
+		self.map_view.add_layer(self.marker_layer)
+		
 		# Add map_widget to the GtkBox
 		box.add(map_widget)
 		
@@ -71,6 +75,7 @@ class GUI:
 		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
 
+		# Get data from Nominatim
 		data = self.request_json_data(to_search)
 		
 		if data == False: 
@@ -79,30 +84,36 @@ class GUI:
 		# Center the result and zoom it
 		self.map_view.center_on(float(data['lat']), float(data['lon']))
 
+		# Remove old layers
+		self.marker_layer.remove_all()
+		self.polygon_layer.remove_all()
+		
+		# TODO: Test data
+		self.trace_polygons(data['geojson']['coordinates'])
+
 		# Create a marker
+		# TODO: Zoom by 'importance' value
 		if data['type'] == "country" or data['type'] == "administrative" \
 		or data['type'] == "continent":
-			self.trace_polygons(data['geojson']['coordinates'])
 			self.create_marker(self.map_view, float(data['lat']),
 							float(data['lon']), 4)
 		else:
-			self.trace_polygons(data['geojson']['coordinates'])
 			self.create_marker(self.map_view, float(data['lat']),
 							float(data['lon']), 10)
 
 
 	def trace_polygons(self, points):
-		# TODO: One polygon at a time
 		
-		# Marker RGB color
+		# Stroke and fill RGB color
 		stroke_color = Clutter.Color.new(11, 191, 222, 255)
 		fill_color = Clutter.Color.new(255, 255, 255, 150)
 		
+		# Add points node to the layer
 		for i in range(0, len(points[0])):
 			coord = Champlain.Coordinate.new_full(float(points[0][i][1]), float(points[0][i][0]))
 			self.polygon_layer.add_node(coord)
 			
-		#self.polygon_layer.set_dash([6, 2])	
+		# self.polygon_layer.set_dash([6, 2])	
 		
 		self.polygon_layer.set_stroke_color(stroke_color)
 		self.polygon_layer.set_fill_color(fill_color)
@@ -112,14 +123,39 @@ class GUI:
 		self.polygon_layer.set_visible(True)
 		
 		# Can be clicked
-		#self.polygon_layer.set_reactive(True)
+		# self.polygon_layer.set_reactive(True)
+		
 		# Connect marker click signal
 		# marker.connect("button-release-event", action, self.map_view)
+
+
+	def create_marker(self, map_view, lat, lon, zoom, label=None):
+		# TODO: Get icons on JSON data ?
 		
-		self.map_view.add_layer(self.polygon_layer)
+		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
+		
+		if(label != None):
+			marker.set_text(label)
+		marker.set_draw_background(False)
+		marker.set_location(lat, lon)
+		
+		# Can be clicked
+		# marker.set_reactive(True)
+		
+		# Connect marker click signal
+		# marker.connect("button-release-event", action, self.map_view)
+
+		self.marker_layer.set_all_markers_undraggable()
+		self.marker_layer.add_marker(marker)
+		
+		if zoom in range(0, 19):
+			self.map_view.set_property('zoom-level', zoom)
+		
+		self.marker_layer.animate_in_all_markers()
 
 
 	def request_json_data(self, to_search):
+		
 		# Convert special chars
 		if(to_search != ''):
 			to_search_parsed = urllib.parse.quote(to_search)
@@ -155,32 +191,6 @@ class GUI:
 		# print('data =', data)
 		
 		return data
-
-
-	def create_marker(self, map_view, lat, lon, zoom, label=None):
-		# TODO: Get icons on JSON data ?
-		
-		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
-		if(label != None):
-			marker.set_text(label)
-		marker.set_draw_background(False)
-		marker.set_location(lat, lon)
-		
-		# Can be clicked
-		#marker.set_reactive(True)
-		# Connect marker click signal
-		# marker.connect("button-release-event", action, self.map_view)
-		
-		# Can't move marker
-		self.layer.remove_all()
-		self.layer.set_all_markers_undraggable()
-		self.layer.add_marker(marker)
-		
-		if zoom in range(0, 19):
-			self.map_view.set_property('zoom-level', zoom)
-		
-		self.map_view.add_layer(self.layer)
-		self.layer.animate_in_all_markers()
 
 
 	def new_error_dialog(self, label):
