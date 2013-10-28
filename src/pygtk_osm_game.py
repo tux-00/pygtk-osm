@@ -185,8 +185,7 @@ class GUI:
 
 
 	def request_json_data(self, to_search):
-		# TODO: Detect no connection
-		
+
 		# Convert special chars
 		if(to_search != ''):
 			to_search_parsed = urllib.parse.quote(to_search)
