@@ -97,14 +97,20 @@ class GUI:
 							data['geojson']['type'])
 
 		# Create a marker
-		# TODO: Zoom by 'importance' value
-		if data['type'] == "country" or data['type'] == "administrative" \
-		or data['type'] == "continent":
-			self.create_marker(self.map_view, float(data['lat']),
-							float(data['lon']), 4)
-		else:
-			self.create_marker(self.map_view, float(data['lat']),
-							float(data['lon']), 10)
+		self.create_marker(self.map_view, float(data['lat']),
+							float(data['lon']),
+							self.get_zoom_by_type(data['type']))
+
+
+	def get_zoom_by_type(self, result_type = None):
+
+		zoom = 10
+
+		if   result_type == 'peak': zoom = 12
+		elif result_type == 'administrative': zoom = 5
+		elif result_type == 'continent': zoom = 3
+		
+		return zoom
 
 
 	def trace_polygons(self, points, multipoints=0, coord_type=None):
