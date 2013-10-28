@@ -20,6 +20,7 @@
 #
 
 from gi.repository import Gtk, GtkChamplain, GtkClutter, Champlain, Clutter
+from urllib.error import URLError
 
 import sys, urllib.request, json, ast
 
@@ -107,7 +108,7 @@ class GUI:
 		zoom = 10
 
 		if   result_type == 'peak': zoom = 12
-		elif result_type == 'administrative': zoom = 5
+		elif result_type == 'administrative': zoom = 6
 		elif result_type == 'continent': zoom = 3
 		
 		return zoom
@@ -192,14 +193,14 @@ class GUI:
 		else: return False
 		
 		# Build request
+		# TODO: Add menu option 'highlight'
 		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search_parsed\
 			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
 		
-		try:
-			# Send request to Nominatim
-			ret = urllib.request.urlopen(req)
-		except Exception as detail:
-			self.new_error_dialog(detail)
+		# Send request to Nominatim
+		try: ret = urllib.request.urlopen(req)
+		except URLError as detail:
+			self.new_error_dialog(str(detail))
 			return False
 					
 		# Get returned data
