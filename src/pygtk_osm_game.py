@@ -50,6 +50,7 @@ class GUI:
 		self.map_view = map_widget.get_view()
 		self.marker_layer = Champlain.MarkerLayer()
 		self.polygon_layer = Champlain.PathLayer()
+		self.multi_layer = []
 		
 		# Smooth mode
 		self.map_view.set_property('kinetic-mode', True)
@@ -87,9 +88,13 @@ class GUI:
 		# Remove old layers
 		self.marker_layer.remove_all()
 		self.polygon_layer.remove_all()
+		for i in range(0, len(self.multi_layer)):
+			self.multi_layer[i].remove_all()
 		
-		# TODO: Test data
-		self.trace_polygons(data['geojson']['coordinates'])
+		# Trace polygons
+		self.trace_polygons(data['geojson']['coordinates'],
+							len(data['geojson']['coordinates']),
+							data['geojson']['type'])
 
 		# Create a marker
 		# TODO: Zoom by 'importance' value
@@ -102,25 +107,43 @@ class GUI:
 							float(data['lon']), 10)
 
 
-	def trace_polygons(self, points):
+	def trace_polygons(self, points, multipoints=0, coord_type=None):
 		
 		# Stroke and fill RGB color
 		stroke_color = Clutter.Color.new(11, 191, 222, 255)
 		fill_color = Clutter.Color.new(255, 255, 255, 150)
-		
-		# Add points node to the layer
-		for i in range(0, len(points[0])):
-			coord = Champlain.Coordinate.new_full(float(points[0][i][1]), float(points[0][i][0]))
-			self.polygon_layer.add_node(coord)
+
+		if multipoints != 0 and coord_type == 'MultiPolygon':
+			# FIXME: Bug when double click on search button
+			for i in range(0, multipoints):
+				self.multi_layer.append(Champlain.PathLayer())
+				
+				for j in range(0, len(points[i][0])):
+					coord = Champlain.Coordinate.new_full(float(points[i][0][j][1]), float(points[i][0][j][0]))
+					self.multi_layer[i].add_node(coord)
+				
+				self.multi_layer[i].set_stroke_color(stroke_color)
+				self.multi_layer[i].set_fill_color(fill_color)
 			
-		# self.polygon_layer.set_dash([6, 2])	
-		
-		self.polygon_layer.set_stroke_color(stroke_color)
-		self.polygon_layer.set_fill_color(fill_color)
-		
-		self.polygon_layer.set_closed(True)
-		self.polygon_layer.set_fill(True)
-		self.polygon_layer.set_visible(True)
+				self.multi_layer[i].set_fill(True)
+				self.multi_layer[i].set_visible(True)
+				self.multi_layer[i].set_closed(True)
+				
+				self.map_view.add_layer(self.multi_layer[i])
+				
+		elif coord_type == 'Polygon':
+			for i in range(0, len(points[0])):
+				coord = Champlain.Coordinate.new_full(float(points[0][i][1]), float(points[0][i][0]))
+				self.polygon_layer.add_node(coord)
+
+			self.polygon_layer.set_stroke_color(stroke_color)
+			self.polygon_layer.set_fill_color(fill_color)
+
+			self.polygon_layer.set_fill(True)
+			self.polygon_layer.set_visible(True)
+			self.polygon_layer.set_closed(True)
+			
+		# self.polygon_layer.set_dash([6, 2])
 		
 		# Can be clicked
 		# self.polygon_layer.set_reactive(True)
@@ -150,11 +173,12 @@ class GUI:
 		
 		if zoom in range(0, 19):
 			self.map_view.set_property('zoom-level', zoom)
-		
-		self.marker_layer.animate_in_all_markers()
+
+		self.marker_layer.raise_top()
 
 
 	def request_json_data(self, to_search):
+		# TODO: Detect no connection
 		
 		# Convert special chars
 		if(to_search != ''):
@@ -162,7 +186,6 @@ class GUI:
 		else: return False
 		
 		# Build request
-		# TODO: add accept-language param
 		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search_parsed\
 			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
 		
