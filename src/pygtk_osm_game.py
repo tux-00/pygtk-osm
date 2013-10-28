@@ -45,6 +45,9 @@ class GUI:
 		self.entry_search = self.builder.get_object('entry_search')
 		self.button_search = self.builder.get_object('button_search')
 		self.error_dialog = self.builder.get_object('error_dialog')
+		
+		# Parameters
+		self.is_highlight = True
 
 		# Create layers
 		map_widget = GtkChamplain.Embed()
@@ -93,9 +96,10 @@ class GUI:
 			self.multi_layer[i].remove_all()
 		
 		# Trace polygons
-		self.trace_polygons(data['geojson']['coordinates'],
-							len(data['geojson']['coordinates']),
-							data['geojson']['type'])
+		if self.is_highlight == True:
+			self.trace_polygons(data['geojson']['coordinates'],
+								len(data['geojson']['coordinates']),
+								data['geojson']['type'])
 
 		# Create a marker
 		self.create_marker(self.map_view, float(data['lat']),
@@ -192,9 +196,10 @@ class GUI:
 		else: return False
 		
 		# Build request
-		# TODO: Add menu option 'highlight'
-		req = "http://nominatim.openstreetmap.org/search?&q=" + to_search_parsed\
-			  + "&format=json&addressdetails=1&limit=1&polygon_geojson=1"
+		req = "http://nominatim.openstreetmap.org/search?&q=" \
+		+ to_search_parsed \
+		+ "&format=json&addressdetails=1&limit=1&polygon_geojson=" \
+		+ str(int(self.is_highlight))
 		
 		# Send request to Nominatim
 		try: ret = urllib.request.urlopen(req)
@@ -228,11 +233,24 @@ class GUI:
 			self.error_dialog.run()
 			self.error_dialog.hide()
 		else: return False
+		
+		
+	def highlight_search(self, is_highlight):
+		self.polygon_layer.set_visible(is_highlight)
+			
+		if len(self.multi_layer) != 0:
+			for i in range(0, len(self.multi_layer)):
+				self.multi_layer[i].set_visible(is_highlight)
 
 
 	def on_entry_search_icon_press(self, *args):
 		self.entry_search.set_text('')
 		self.button_search.grab_focus()
+		
+		
+	def on_highlight_item_toggled(self, highlight_item):
+		self.highlight_search(highlight_item.get_active())
+		self.is_highlight = highlight_item.get_active()
 		
 
 	def destroy(self, window):
