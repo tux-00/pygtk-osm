@@ -1,6 +1,4 @@
-#!/usr/bin/python3
-#
-# -*- Mode: Python; indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-
+#! /usr/bin/env python3.3
 #
 # pygtk_osm_game.py
 # Copyright (C) 2013 BIANCONE Raphael <raphb.bis@gmail.com>
@@ -107,7 +105,7 @@ class GUI:
 							self.get_zoom_by_type(data['type']))
 
 
-	def get_zoom_by_type(self, result_type = None):
+	def get_zoom_by_type(self, result_type=None):
 
 		zoom = 10
 
