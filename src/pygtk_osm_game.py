@@ -98,13 +98,13 @@ class GUI:
 		# Trace polygons
 		if self.is_highlight:
 			self.trace_polygons(data['geojson']['coordinates'],
-								len(data['geojson']['coordinates']),
-								data['geojson']['type'])
+					len(data['geojson']['coordinates']),
+					data['geojson']['type'])
 
 		# Create a marker
 		self.create_marker(self.map_view, float(data['lat']),
-							float(data['lon']),
-							self.get_zoom_by_type(data['type']))
+				float(data['lon']),
+				self.get_zoom_by_type(data['type']))
 
 	def get_zoom_by_type(self, result_type=None):
 		# TODO: Optimize
@@ -130,8 +130,8 @@ class GUI:
 				
 				for j in range(0, len(points[i][0])):
 					coord = Champlain.Coordinate.new_full(
-													float(points[i][0][j][1]),
-													float(points[i][0][j][0]))
+						float(points[i][0][j][1]),
+						float(points[i][0][j][0]))
 					self.multi_layer[i].add_node(coord)
 				
 				self.multi_layer[i].set_stroke_color(stroke_color)
@@ -145,8 +145,9 @@ class GUI:
 				
 		elif coord_type == 'Polygon':
 			for i in range(0, len(points[0])):
-				coord = Champlain.Coordinate.new_full(float(points[0][i][1]),
-													float(points[0][i][0]))
+				coord = Champlain.Coordinate.new_full(
+							float(points[0][i][1]),
+							float(points[0][i][0]))
 				self.polygon_layer.add_node(coord)
 
 			self.polygon_layer.set_stroke_color(stroke_color)
@@ -214,7 +215,7 @@ class GUI:
 		# If search not found
 		if(len(data) == 0):
 			self.new_error_dialog("Search \'" + str(to_search) 
-								+ "\' not found.")
+						+ "\' not found.")
 			return False
 		
 		# Make dictionary
