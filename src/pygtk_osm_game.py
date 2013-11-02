@@ -50,12 +50,9 @@ class GUI:
 		# Parameters
 		self.is_highlight = True
 
-		# Create layers
+		# Create map handle
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
-		self.marker_layer = Champlain.MarkerLayer()
-		self.polygon_layer = Champlain.PathLayer()
-		self.multi_layer = []
 		
 		# Smooth mode
 		self.map_view.set_property('kinetic-mode', True)
@@ -65,10 +62,10 @@ class GUI:
 		
 		# Zoom on double click
 		self.map_view.set_property('zoom-on-double-click', True)
-
-		# Add layers on the map
-		self.map_view.add_layer(self.polygon_layer)
-		self.map_view.add_layer(self.marker_layer)
+		
+		# Create a Polygon an Marker objects
+		self.polygon = Polygon(self.map_view)
+		self.marker = Marker(self.map_view)
 		
 		# Add map_widget to the GtkBox
 		box.add(map_widget)
@@ -90,19 +87,17 @@ class GUI:
 		self.map_view.center_on(float(data['lat']), float(data['lon']))
 
 		# Remove old layers
-		self.marker_layer.remove_all()
-		self.polygon_layer.remove_all()
-		for i in range(0, len(self.multi_layer)):
-			self.multi_layer[i].remove_all()
+		self.marker.remove()
+		self.polygon.remove()
 		
 		# Trace polygons
 		if self.is_highlight:
-			self.trace_polygons(data['geojson']['coordinates'],
+			self.polygon.display(data['geojson']['coordinates'],
 					len(data['geojson']['coordinates']),
 					data['geojson']['type'])
 
 		# Create a marker
-		self.create_marker(self.map_view, float(data['lat']),
+		self.marker.display(self.map_view, float(data['lat']),
 				float(data['lon']),
 				self.get_zoom_by_type(data['type']))
 
@@ -116,82 +111,8 @@ class GUI:
 		elif result_type == 'continent': zoom = 3
 		
 		return zoom
-
-	def trace_polygons(self, points, multipoints=0, coord_type=None):
-		# TODO: Thread
-			
-		# Stroke and fill RGB color
-		stroke_color = Clutter.Color.new(11, 191, 222, 255)
-		fill_color = Clutter.Color.new(255, 255, 255, 150)
-
-		if multipoints != 0 and coord_type == 'MultiPolygon':
-			for i in range(0, multipoints):
-				self.multi_layer.append(Champlain.PathLayer())
-				
-				for j in range(0, len(points[i][0])):
-					coord = Champlain.Coordinate.new_full(
-						float(points[i][0][j][1]),
-						float(points[i][0][j][0]))
-					self.multi_layer[i].add_node(coord)
-				
-				self.multi_layer[i].set_stroke_color(stroke_color)
-				self.multi_layer[i].set_fill_color(fill_color)
-			
-				self.multi_layer[i].set_fill(True)
-				self.multi_layer[i].set_visible(True)
-				self.multi_layer[i].set_closed(True)
-				
-				self.map_view.add_layer(self.multi_layer[i])
-				
-		elif coord_type == 'Polygon':
-			for i in range(0, len(points[0])):
-				coord = Champlain.Coordinate.new_full(
-							float(points[0][i][1]),
-							float(points[0][i][0]))
-				self.polygon_layer.add_node(coord)
-
-			self.polygon_layer.set_stroke_color(stroke_color)
-			self.polygon_layer.set_fill_color(fill_color)
-
-			self.polygon_layer.set_fill(True)
-			self.polygon_layer.set_visible(True)
-			self.polygon_layer.set_closed(True)
-			
-		# self.polygon_layer.set_dash([6, 2])
-		
-		# Can be clicked
-		# self.polygon_layer.set_reactive(True)
-		
-		# Connect marker click signal
-		# marker.connect("button-release-event", action, self.map_view)
-
-	def create_marker(self, map_view, lat, lon, zoom, label=None):
-		# TODO: Thread
-		# TODO: Get icons on JSON data ?
-		
-		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
-		
-		if(label != None):
-			marker.set_text(label)
-		marker.set_draw_background(False)
-		marker.set_location(lat, lon)
-		
-		# Can be clicked
-		# marker.set_reactive(True)
-		
-		# Connect marker click signal
-		# marker.connect("button-release-event", action, self.map_view)
-
-		self.marker_layer.set_all_markers_undraggable()
-		self.marker_layer.add_marker(marker)
-		
-		if zoom in range(0, 19):
-			self.map_view.set_property('zoom-level', zoom)
-
-		self.marker_layer.raise_top()
-
+	
 	def request_json_data(self, to_search):
-
 		# Convert special chars
 		if(to_search != ''):
 			to_search_parsed = urllib.parse.quote(to_search)
@@ -235,25 +156,121 @@ class GUI:
 			self.error_dialog.run()
 			self.error_dialog.hide()
 		else: return False
-		
-	def highlight_search(self, is_highlight):
-		self.polygon_layer.set_visible(is_highlight)
-			
-		if len(self.multi_layer) != 0:
-			for i in range(0, len(self.multi_layer)):
-				self.multi_layer[i].set_visible(is_highlight)
 
 	def on_entry_search_icon_press(self, *args):
 		self.entry_search.set_text('')
 		self.button_search.grab_focus()
 		
 	def on_highlight_item_toggled(self, highlight_item):
-		self.highlight_search(highlight_item.get_active())
 		self.is_highlight = highlight_item.get_active()
+		self.polygon.set_visible(self.is_highlight)
 		
 	def destroy(self, window):
 		Gtk.main_quit()
 
+
+class Polygon:
+	def __init__(self, map_view):
+		# Stroke and fill RGB color
+		self.stroke_color = Clutter.Color.new(11, 191, 222, 255)
+		self.fill_color = Clutter.Color.new(255, 255, 255, 150)
+		
+		self.multi_layer = []
+		self.polygon_layer = Champlain.PathLayer()
+		
+		self.map_view = map_view
+		self.map_view.add_layer(self.polygon_layer)
+		
+	def display(self, points, multipoints=0, coord_type=None):
+		# TODO: Thread
+
+		if multipoints != 0 and coord_type == 'MultiPolygon':
+			for i in range(0, multipoints):
+				self.multi_layer.append(Champlain.PathLayer())
+				
+				for j in range(0, len(points[i][0])):
+					coord = Champlain.Coordinate.new_full(
+						float(points[i][0][j][1]),
+						float(points[i][0][j][0]))
+					self.multi_layer[i].add_node(coord)
+				
+				self.multi_layer[i].set_stroke_color(self.stroke_color)
+				self.multi_layer[i].set_fill_color(self.fill_color)
+			
+				self.multi_layer[i].set_fill(True)
+				self.multi_layer[i].set_visible(True)
+				self.multi_layer[i].set_closed(True)
+				
+				self.map_view.add_layer(self.multi_layer[i])
+				
+		elif coord_type == 'Polygon':
+			for i in range(0, len(points[0])):
+				coord = Champlain.Coordinate.new_full(
+							float(points[0][i][1]),
+							float(points[0][i][0]))
+				self.polygon_layer.add_node(coord)
+
+			self.polygon_layer.set_stroke_color(self.stroke_color)
+			self.polygon_layer.set_fill_color(self.fill_color)
+
+			self.polygon_layer.set_fill(True)
+			self.polygon_layer.set_visible(True)
+			self.polygon_layer.set_closed(True)
+		
+		# Can be clicked
+		# self.polygon_layer.set_reactive(True)
+		
+		# Connect marker click signal
+		# marker.connect("button-release-event", action, self.map_view)
+		
+	def remove(self):
+		self.polygon_layer.remove_all()
+		for i in range(0, len(self.multi_layer)):
+			self.multi_layer[i].remove_all()
+		
+	def set_visible(self, is_highlight):
+		self.polygon_layer.set_visible(is_highlight)
+		
+		if len(self.multi_layer) != 0:
+			for i in range(0, len(self.multi_layer)):
+				self.multi_layer[i].set_visible(is_highlight)
+
+
+class Marker:
+	def __init__(self, map_view):
+		self.marker_layer = Champlain.MarkerLayer()
+		
+		self.map_view = map_view
+		self.map_view.add_layer(self.marker_layer)
+		
+	def display(self, map_view, lat, lon, zoom, label=None):
+		# TODO: Thread
+		# TODO: Get icons on JSON data ?
+		
+		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
+		
+		if(label != None):
+			marker.set_text(label)
+		marker.set_draw_background(False)
+		marker.set_location(lat, lon)
+		
+		# Can be clicked
+		# marker.set_reactive(True)
+		
+		# Connect marker click signal
+		# marker.connect("button-release-event", action, self.map_view)
+
+		self.marker_layer.set_all_markers_undraggable()
+		self.marker_layer.add_marker(marker)
+		
+		if zoom in range(0, 19):
+			self.map_view.set_property('zoom-level', zoom)
+
+		self.marker_layer.raise_top()
+		
+	def remove(self):
+		self.marker_layer.remove_all()
+		
 
 def main():
 	GUI()
