@@ -54,16 +54,11 @@ class GUI:
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
 		
-		# Smooth mode
 		self.map_view.set_property('kinetic-mode', True)
-		
-		# Zoom start
 		self.map_view.set_property('zoom-level', 3)
-		
-		# Zoom on double click
 		self.map_view.set_property('zoom-on-double-click', True)
 		
-		# Create a Polygon an Marker objects
+		# Polygon and Marker objects
 		self.polygon = Polygon(self.map_view)
 		self.marker = Marker(self.map_view)
 		
@@ -73,6 +68,7 @@ class GUI:
 		window.show_all()
 
 	def on_button_search_clicked(self, widget):
+		# TODO: Thread
 		
 		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
@@ -182,7 +178,6 @@ class Polygon:
 		self.map_view.add_layer(self.polygon_layer)
 		
 	def display(self, points, multipoints=0, coord_type=None):
-		# TODO: Thread
 
 		if multipoints != 0 and coord_type == 'MultiPolygon':
 			for i in range(0, multipoints):
@@ -244,7 +239,6 @@ class Marker:
 		self.map_view.add_layer(self.marker_layer)
 		
 	def display(self, map_view, lat, lon, zoom, label=None):
-		# TODO: Thread
 		# TODO: Get icons on JSON data ?
 		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
@@ -263,8 +257,9 @@ class Marker:
 		self.marker_layer.set_all_markers_undraggable()
 		self.marker_layer.add_marker(marker)
 		
-		if zoom in range(0, 19):
-			self.map_view.set_property('zoom-level', zoom)
+		if isinstance(zoom, int):
+			if zoom in range(0, 19):
+				self.map_view.set_property('zoom-level', zoom)
 
 		self.marker_layer.raise_top()
 		
