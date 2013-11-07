@@ -22,15 +22,12 @@ from gi.repository import Gtk, GtkChamplain, GtkClutter, Champlain, Clutter
 import sys
 import json
 import ast
-import threading
 import urllib.request
 from urllib.error import URLError
 
 
 UI_FILE = "./pygtk_osm_game.ui"
 MARKER_IMG_PATH = "../icons/marker.png"
-
-# TODO: Get icons on JSON data ?
 
 
 class GUI:
@@ -57,11 +54,16 @@ class GUI:
 		map_widget = GtkChamplain.Embed()
 		self.map_view = map_widget.get_view()
 		
-		self.map_view.set_kinetic_mode(True)
-		self.map_view.set_zoom_level(3)
-		self.map_view.set_zoom_on_double_click(True)
+		# Smooth mode
+		self.map_view.set_property('kinetic-mode', True)
 		
-		# Polygon and Marker objects
+		# Zoom start
+		self.map_view.set_property('zoom-level', 3)
+		
+		# Zoom on double click
+		self.map_view.set_property('zoom-on-double-click', True)
+		
+		# Create a Polygon an Marker objects
 		self.polygon = Polygon(self.map_view)
 		self.marker = Marker(self.map_view)
 		
@@ -76,7 +78,6 @@ class GUI:
 		to_search = self.entry_search.get_text()
 
 		# Get data from Nominatim
-		# TODO: Thread
 		data = self.request_json_data(to_search)
 		
 		if data is False: 
@@ -91,7 +92,6 @@ class GUI:
 		
 		# Trace polygons
 		if self.is_highlight:
-			# TODO: Thread
 			self.polygon.display(data['geojson']['coordinates'],
 					len(data['geojson']['coordinates']),
 					data['geojson']['type'])
@@ -182,6 +182,8 @@ class Polygon:
 		self.map_view.add_layer(self.polygon_layer)
 		
 	def display(self, points, multipoints=0, coord_type=None):
+		# TODO: Thread
+
 		if multipoints != 0 and coord_type == 'MultiPolygon':
 			for i in range(0, multipoints):
 				self.multi_layer.append(Champlain.PathLayer())
@@ -242,6 +244,9 @@ class Marker:
 		self.map_view.add_layer(self.marker_layer)
 		
 	def display(self, map_view, lat, lon, zoom, label=None):
+		# TODO: Thread
+		# TODO: Get icons on JSON data ?
+		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
 		
 		if(label != None):
@@ -258,9 +263,8 @@ class Marker:
 		self.marker_layer.set_all_markers_undraggable()
 		self.marker_layer.add_marker(marker)
 		
-		if(isinstance(zoom, int)):
-			if zoom in range(0, 19):
-				self.map_view.set_zoom_level(zoom)
+		if zoom in range(0, 19):
+			self.map_view.set_property('zoom-level', zoom)
 
 		self.marker_layer.raise_top()
 		
