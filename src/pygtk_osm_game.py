@@ -32,7 +32,6 @@ MARKER_IMG_PATH = "../icons/marker.png"
 
 class GUI:
 	def __init__(self):
-
 		GtkClutter.init([])
 		
 		# Build windows with the .ui file and connect signals
@@ -68,8 +67,6 @@ class GUI:
 		window.show_all()
 
 	def on_button_search_clicked(self, widget):
-		# TODO: Thread
-		
 		# Get search request from entry_search
 		to_search = self.entry_search.get_text()
 
@@ -98,8 +95,6 @@ class GUI:
 				self.get_zoom_by_type(data['type']))
 
 	def get_zoom_by_type(self, result_type=None):
-		# TODO: Optimize
-
 		zoom = 10
 
 		if   result_type == 'peak': zoom = 12
@@ -239,8 +234,6 @@ class Marker:
 		self.map_view.add_layer(self.marker_layer)
 		
 	def display(self, map_view, lat, lon, zoom, label=None):
-		# TODO: Get icons on JSON data ?
-		
 		marker = Champlain.Label.new_from_file(MARKER_IMG_PATH)
 		
 		if(label != None):
