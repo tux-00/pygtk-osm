@@ -1,6 +1,6 @@
 #! /usr/bin/env python3.3
 #
-# pygtk_osm_game.py
+# viewer.py
 # Copyright (C) 2013 BIANCONE Raphael <raphb.bis@gmail.com>
 # 
 # pygtk-osm is free software: you can redistribute it and/or modify it
@@ -26,7 +26,7 @@ import urllib.request
 from urllib.error import URLError
 
 
-UI_FILE = "./open_street_map_viewer.ui"
+UI_FILE = "./viewer.ui"
 MARKER_IMG_PATH = "../icons/marker.png"
 
 
