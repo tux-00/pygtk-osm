@@ -26,7 +26,7 @@ import urllib.request
 from urllib.error import URLError
 
 
-UI_FILE = "./pygtk_osm_game.ui"
+UI_FILE = "./open_street_map_viewer.ui"
 MARKER_IMG_PATH = "../icons/marker.png"
 
 
