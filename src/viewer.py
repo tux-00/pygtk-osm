@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #
-# pygtk_osm_game.py
+# viewer.py
 # Copyright (C) 2013 BIANCONE Raphael <raphb.bis@gmail.com>
 # 
 # pygtk-osm is free software: you can redistribute it and/or modify it
@@ -35,6 +35,7 @@ except ImportError:
     from urllib2 import URLError
     from urllib import quote
 
+<<<<<<< HEAD:src/pygtk_osm_game.py
 from os.path import abspath, dirname, join, normpath
 import gettext
 import locale
@@ -56,6 +57,10 @@ gettext.textdomain(APP)
 _ = gettext.gettext
 
 print('Using locale directory: {}'.format(LOCALE_DIR))
+=======
+UI_FILE = "./viewer.ui"
+MARKER_IMG_PATH = "../icons/marker.png"
+>>>>>>> 7dddf9c48b8b02d23d349b75c60bd2add8066b2c:src/viewer.py
 
 
 class GUI:
