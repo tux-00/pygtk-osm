@@ -1,4 +1,4 @@
-#! /usr/bin/env python3.3
+#! /usr/bin/env python
 #
 # viewer.py
 # Copyright (C) 2013 BIANCONE Raphael <raphb.bis@gmail.com>
@@ -22,12 +22,45 @@ from gi.repository import Gtk, GtkChamplain, GtkClutter, Champlain, Clutter
 import sys
 import json
 import ast
-import urllib.request
-from urllib.error import URLError
 
+# http://docs.pythonsprints.com/python3_porting/py-porting.html
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+    from urllib.error import URLError
+    from urllib.parse import quote
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
+    from urllib2 import URLError
+    from urllib import quote
 
+<<<<<<< HEAD:src/pygtk_osm_game.py
+from os.path import abspath, dirname, join, normpath
+import gettext
+import locale
+
+APP = 'pygtk-osm'
+WHERE_AM_I = abspath(dirname(__file__))
+
+print('Directory: {}'.format(WHERE_AM_I))
+
+LOCALE_DIR = normpath(join(WHERE_AM_I, '../locale'))
+
+MARKER_IMG_PATH = normpath(join(WHERE_AM_I, '../icons/marker.png'))
+UI_FILE = join(WHERE_AM_I, 'pygtk_osm_game.ui')
+
+locale.setlocale(locale.LC_ALL, '')
+locale.bindtextdomain(APP, LOCALE_DIR)
+gettext.bindtextdomain(APP, LOCALE_DIR)
+gettext.textdomain(APP)
+_ = gettext.gettext
+
+print('Using locale directory: {}'.format(LOCALE_DIR))
+=======
 UI_FILE = "./viewer.ui"
 MARKER_IMG_PATH = "../icons/marker.png"
+>>>>>>> 7dddf9c48b8b02d23d349b75c60bd2add8066b2c:src/viewer.py
 
 
 class GUI:
@@ -36,6 +69,7 @@ class GUI:
 		
 		# Build windows with the .ui file and connect signals
 		self.builder = Gtk.Builder()
+		self.builder.set_translation_domain(APP)
 		self.builder.add_from_file(UI_FILE)
 		self.builder.connect_signals(self)
 
@@ -106,7 +140,7 @@ class GUI:
 	def request_json_data(self, to_search):
 		# Convert special chars
 		if(to_search != ''):
-			to_search_parsed = urllib.parse.quote(to_search)
+			to_search_parsed = quote(to_search)
 		else: return False
 		
 		# Build request
@@ -116,7 +150,7 @@ class GUI:
 		+ str(int(self.is_highlight))
 		
 		# Send request to Nominatim
-		try: ret = urllib.request.urlopen(req)
+		try: ret = urlopen(req)
 		except URLError as detail:
 			self.new_error_dialog(str(detail))
 			return False

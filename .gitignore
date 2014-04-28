@@ -1,4 +1,5 @@
 *.py[cod]
+*~
 
 # C extensions
 *.so
@@ -29,6 +30,7 @@ nosetests.xml
 
 # Translations
 *.mo
+locale
 
 # Mr Developer
 .mr.developer.cfg
